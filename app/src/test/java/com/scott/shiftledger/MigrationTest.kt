@@ -34,7 +34,7 @@ class MigrationTest {
             old.execSQL("INSERT INTO entries VALUES ('order','ORDER','2026-10-02',10000,'123','',30,20.0,'','saved order')")
             old.version = 3
         }
-        val upgraded = Room.databaseBuilder(context, LedgerDatabase::class.java, name).addMigrations(LedgerDatabase.MIGRATION_3_4, LedgerDatabase.MIGRATION_4_5).build()
+        val upgraded = Room.databaseBuilder(context, LedgerDatabase::class.java, name).addMigrations(LedgerDatabase.MIGRATION_3_4, LedgerDatabase.MIGRATION_4_5, LedgerDatabase.MIGRATION_5_6).build()
         try {
             val repository = LedgerRepository(upgraded)
             val snapshot = repository.snapshot()
@@ -65,7 +65,7 @@ class MigrationTest {
             old.execSQL("INSERT INTO shifts (id,date,startedAt,endedAt,runningSince,workedMillis,gpsMeters,correctedMiles,odometerStart,lastFixAt,gaps,reviewed,note,correctedStartedAt,correctedEndedAt,correctedWorkedMillis) VALUES ('kept','2026-10-01',1000,5000,NULL,4000,123.5,NULL,NULL,4000,0,1,'corrected shift',2000,5000,2500)")
             old.version = 2
         }
-        fun open() = Room.databaseBuilder(context, LedgerDatabase::class.java, name).addMigrations(LedgerDatabase.MIGRATION_2_3, LedgerDatabase.MIGRATION_3_4, LedgerDatabase.MIGRATION_4_5).addCallback(LedgerDatabase.SEED_MESSAGES).build()
+        fun open() = Room.databaseBuilder(context, LedgerDatabase::class.java, name).addMigrations(LedgerDatabase.MIGRATION_2_3, LedgerDatabase.MIGRATION_3_4, LedgerDatabase.MIGRATION_4_5, LedgerDatabase.MIGRATION_5_6).addCallback(LedgerDatabase.SEED_MESSAGES).build()
         var upgraded = open()
         try {
             assertEquals(2500L, upgraded.dao().shifts().single().correctedWorkedMillis)
@@ -93,7 +93,7 @@ class MigrationTest {
             old.execSQL("INSERT INTO expenses (id,date,amountCents,category,note) VALUES ('fuel','2026-10-01',2050,'Fuel','existing expense')")
             old.version = 1
         }
-        val upgraded = Room.databaseBuilder(context, LedgerDatabase::class.java, name).addMigrations(LedgerDatabase.MIGRATION_1_2, LedgerDatabase.MIGRATION_2_3, LedgerDatabase.MIGRATION_3_4, LedgerDatabase.MIGRATION_4_5).build()
+        val upgraded = Room.databaseBuilder(context, LedgerDatabase::class.java, name).addMigrations(LedgerDatabase.MIGRATION_1_2, LedgerDatabase.MIGRATION_2_3, LedgerDatabase.MIGRATION_3_4, LedgerDatabase.MIGRATION_4_5, LedgerDatabase.MIGRATION_5_6).build()
         try {
             val shift = upgraded.dao().shifts().single()
             assertEquals("existing shift", shift.note)

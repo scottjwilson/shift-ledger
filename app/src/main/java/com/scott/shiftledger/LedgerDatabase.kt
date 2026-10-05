@@ -61,7 +61,7 @@ interface LedgerDao {
     @Query("DELETE FROM entries WHERE id = :id AND kind = 'MANUAL'") suspend fun deleteManual(id: String)
 }
 
-@Database(entities = [Entry::class, Expense::class, Shift::class, ImportSource::class, MessageTemplate::class, WeeklyGoalPlan::class, FuelStop::class, FuelReading::class, VehicleSettings::class, MaintenanceRecord::class], version = 5, exportSchema = true)
+@Database(entities = [Entry::class, Expense::class, Shift::class, ImportSource::class, MessageTemplate::class, WeeklyGoalPlan::class, FuelStop::class, FuelReading::class, VehicleSettings::class, MaintenanceRecord::class], version = 6, exportSchema = true)
 abstract class LedgerDatabase : RoomDatabase() {
     abstract fun dao(): LedgerDao
     companion object {
@@ -80,6 +80,12 @@ abstract class LedgerDatabase : RoomDatabase() {
         }
         val SEED_MESSAGES = object : Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) { SupportMessages.seed(db) }
+        }
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE vehicle_settings ADD COLUMN pendingFuelGapDate TEXT")
+                db.execSQL("ALTER TABLE vehicle_settings ADD COLUMN pendingFuelGapOdometer REAL")
+            }
         }
         val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -111,13 +117,29 @@ class LedgerRepository(val database: LedgerDatabase) {
         FuelTracking.validate(stop)
         require(LocalDate.parse(stop.date) <= LocalDate.now()) { "Choose today or an earlier date." }
         FuelTracking.validateSequence(dao.fuel().filterNot { it.id == stop.id } + stop)
-        dao.saveFuel(stop)
+        val vehicle = dao.vehicles().firstOrNull() ?: VehicleSettings()
+        val saved = if (FuelTracking.followsPendingGap(stop, vehicle)) {
+            dao.saveVehicle(FuelTracking.clearPendingGap(vehicle))
+            stop.copy(missedFill = true)
+        } else stop
+        dao.saveFuel(saved)
         if (stop.countAsExpense) dao.saveExpense(FuelTracking.expense(stop)) else dao.deleteExpense(stop.expenseId)
     }
     suspend fun deleteFuel(id: String) = database.withTransaction {
         val ordered = FuelTracking.ordered(dao.fuel())
         val index = ordered.indexOfFirst { it.id == id }
-        if (index >= 0) ordered.getOrNull(index + 1)?.let { dao.saveFuel(it.copy(missedFill = true)) }
+        if (index >= 0) {
+            val next = ordered.getOrNull(index + 1)
+            if (next != null) dao.saveFuel(next.copy(missedFill = true))
+            else {
+                val removed = ordered[index]
+                val vehicle = dao.vehicles().firstOrNull() ?: VehicleSettings()
+                // Keep the earliest unresolved gap if several trailing purchases are deleted.
+                if (vehicle.pendingFuelGapDate == null || !FuelTracking.followsPendingGap(removed, vehicle)) {
+                    dao.saveVehicle(vehicle.copy(pendingFuelGapDate = removed.date, pendingFuelGapOdometer = removed.odometer))
+                }
+            }
+        }
         dao.deleteFuel(id); dao.deleteExpense("fuel:$id")
     }
     suspend fun saveReading(reading: FuelReading) {
@@ -221,6 +243,11 @@ class LedgerRepository(val database: LedgerDatabase) {
         maintenanceToAdd.filter { it.countAsExpense && it.amountCents > 0 }.forEach { dao.saveExpense(FuelTracking.expense(it)) }
         dao.insertReadings(backup.fuelReadings)
         dao.insertVehicles(backup.vehicles)
+        val mergedVehicle = dao.vehicles().firstOrNull() ?: VehicleSettings()
+        FuelTracking.ordered(dao.fuel()).firstOrNull { FuelTracking.followsPendingGap(it, mergedVehicle) }?.let {
+            dao.saveFuel(it.copy(missedFill = true))
+            dao.saveVehicle(FuelTracking.clearPendingGap(mergedVehicle))
+        }
         dao.insertGoals(backup.goalPlans)
         dao.insertTemplates(backup.messageTemplates)
         // A fresh installation's starter example must not hide the user's edited copy in a backup.
@@ -236,7 +263,7 @@ class LedgerApplication : Application() {
     fun refreshWidgets() { applicationScope.launch { runCatching { LedgerWidget.updateAll(this@LedgerApplication) } } }
     val repository by lazy {
         LedgerRepository(Room.databaseBuilder(this, LedgerDatabase::class.java, "shift-ledger.db")
-            .addMigrations(LedgerDatabase.MIGRATION_1_2, LedgerDatabase.MIGRATION_2_3, LedgerDatabase.MIGRATION_3_4, LedgerDatabase.MIGRATION_4_5).addCallback(LedgerDatabase.SEED_MESSAGES).build())
+            .addMigrations(LedgerDatabase.MIGRATION_1_2, LedgerDatabase.MIGRATION_2_3, LedgerDatabase.MIGRATION_3_4, LedgerDatabase.MIGRATION_4_5, LedgerDatabase.MIGRATION_5_6).addCallback(LedgerDatabase.SEED_MESSAGES).build())
     }
     override fun onCreate() { super.onCreate(); refreshWidgets() }
 }

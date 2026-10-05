@@ -23,7 +23,7 @@ class BackupCodecTest {
         val state = sample()
         assertTrue(runCatching { BackupCodec.decode(BackupCodec.encode(state.copy(entries = state.entries + state.entries.first()), 6000)) }.isFailure)
         assertTrue(runCatching { BackupCodec.decode(BackupCodec.encode(state).replace("2026-10-02", "garbage")) }.isFailure)
-        assertTrue(runCatching { BackupCodec.decode(BackupCodec.encode(state).replace("\"version\": 5", "\"version\": 99")) }.isFailure)
+        assertTrue(runCatching { BackupCodec.decode(BackupCodec.encode(state).replace("\"version\": 6", "\"version\": 99")) }.isFailure)
         assertTrue(runCatching { BackupCodec.decode(BackupCodec.encode(state.copy(sources = emptyList()))) }.isFailure)
     }
     @Test fun `CSV escapes formula prefixes quotes and keeps payout mileage out`() {

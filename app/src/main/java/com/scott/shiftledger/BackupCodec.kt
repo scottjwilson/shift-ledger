@@ -7,7 +7,7 @@ import kotlinx.serialization.json.Json
 @Serializable
 data class LedgerBackup(
     val format: String = "shift-ledger",
-    val version: Int = 5,
+    val version: Int = 6,
     val createdAt: Long,
     val entries: List<Entry>,
     val shifts: List<Shift>,
@@ -29,7 +29,7 @@ object BackupCodec {
     fun decode(text: String): LedgerBackup {
         require(text.length <= 20_000_000) { "Backup is too large (20 MB limit)." }
         val backup = json.decodeFromString<LedgerBackup>(text)
-        require(backup.format == "shift-ledger" && backup.version in 1..5) { "Unsupported backup format or version." }
+        require(backup.format == "shift-ledger" && backup.version in 1..6) { "Unsupported backup format or version." }
         require(backup.createdAt > 0)
         fun ids(values: List<String>) = values.size <= 100_000 && values.none { it.isBlank() } && values.distinct().size == values.size
         require(ids(backup.entries.map { it.id }) && ids(backup.shifts.map { it.id }) && ids(backup.expenses.map { it.id }) && ids(backup.sources.map { it.id }) && ids(backup.messageTemplates.map { it.id })) { "Invalid or repeated record IDs." }

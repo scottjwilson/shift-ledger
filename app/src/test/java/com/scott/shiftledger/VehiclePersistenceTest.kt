@@ -79,8 +79,51 @@ class VehiclePersistenceTest {
             assertTrue(repo.snapshot().fuelStops.first { it.id=="end" }.missedFill)
         } finally { db.close() }
     }
+    @Test fun `deleting trailing fuel preserves gap through reopen backup and later fills`() = runTest {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val name = "pending-fuel-gap.db"
+        context.deleteDatabase(name)
+        fun open() = Room.databaseBuilder(context, LedgerDatabase::class.java, name).build()
+        var db = open()
+        try {
+            var repo = LedgerRepository(db)
+            repo.saveFuel(fuel)
+            repo.saveFuel(fuel.copy(id = "partial", date = "2026-09-03", odometer = 1100.0, gallons = 5.0, fullTank = false, barsAfter = 4))
+            repo.deleteFuel("partial")
+            db.close(); db = open(); repo = LedgerRepository(db)
+            val backup = BackupCodec.decode(BackupCodec.encode(repo.snapshot()))
+            assertEquals("2026-09-03", backup.vehicles.single().pendingFuelGapDate)
+            val targetDb = Room.inMemoryDatabaseBuilder(context, LedgerDatabase::class.java).build()
+            try {
+                val target = LedgerRepository(targetDb)
+                target.restore(backup)
+                // An earlier backfilled purchase must not consume the later missing-fill marker.
+                target.saveFuel(fuel.copy(id = "earlier", date = "2026-09-02", odometer = 1050.0, fullTank = false, barsAfter = 4))
+                assertNotNull(target.snapshot().vehicle.pendingFuelGapDate)
+                target.saveFuel(fuel.copy(id = "end", date = "2026-09-04", odometer = 1300.0, gallons = 15.0))
+                assertTrue(FuelTracking.cycles(target.snapshot().fuelStops).isEmpty())
+                assertTrue(target.snapshot().fuelStops.first { it.id == "end" }.missedFill)
+                assertNull(target.snapshot().vehicle.pendingFuelGapDate)
+                target.saveFuel(fuel.copy(id = "next", date = "2026-09-05", odometer = 1500.0, gallons = 10.0))
+                assertEquals(20.0, FuelTracking.cycles(target.snapshot().fuelStops).single().mpg, 0.0)
+            } finally { targetDb.close() }
+        } finally { db.close(); context.deleteDatabase(name) }
+    }
+    @Test fun `restore across a pending gap also excludes the incomplete interval`() = runTest {
+        val db = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext<Context>(), LedgerDatabase::class.java).build()
+        try {
+            val repo = LedgerRepository(db)
+            repo.saveFuel(fuel)
+            repo.saveFuel(fuel.copy(id = "partial", date = "2026-09-02", odometer = 1100.0, fullTank = false, barsAfter = 4))
+            repo.deleteFuel("partial")
+            val end = fuel.copy(id = "end", date = "2026-09-03", odometer = 1300.0)
+            repo.restore(BackupCodec.decode(BackupCodec.encode(LedgerState(fuelStops = listOf(end), expenses = listOf(FuelTracking.expense(end))))))
+            assertTrue(FuelTracking.cycles(repo.snapshot().fuelStops).isEmpty())
+            assertNull(repo.snapshot().vehicle.pendingFuelGapDate)
+        } finally { db.close() }
+    }
     @Test fun `backup rejects orphaned and conflicting linked costs and supports old versions`() {
-        for (version in 1..4) {
+        for (version in 1..5) {
             val old="""{"format":"shift-ledger","version":$version,"createdAt":5000,"entries":[],"shifts":[],"expenses":[],"sources":[]}"""
             assertTrue(BackupCodec.decode(old).fuelStops.isEmpty())
         }
@@ -91,6 +134,33 @@ class VehiclePersistenceTest {
         val csv=BackupCodec.csv(state)
         assertTrue(csv.contains("FUEL_DETAIL"))
         assertTrue(csv.contains("expense counted in EXPENSE rows"))
+    }
+    @Test fun `version five upgrade preserves vehicle settings and fuel costs`() = runTest {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val name = "vehicle-v5-migration.db"; context.deleteDatabase(name)
+        val path = context.getDatabasePath(name); path.parentFile!!.mkdirs()
+        val schema = JSONObject(File("schemas/com.scott.shiftledger.LedgerDatabase/5.json").readText()).getJSONObject("database")
+        SQLiteDatabase.openOrCreateDatabase(path, null).use { old ->
+            val entities = schema.getJSONArray("entities")
+            for (i in 0 until entities.length()) {
+                val entity = entities.getJSONObject(i)
+                old.execSQL(entity.getString("createSql").replace("\${TABLE_NAME}", entity.getString("tableName")))
+            }
+            old.execSQL("INSERT INTO vehicle_settings VALUES ('primary','My van',22.0)")
+            old.execSQL("INSERT INTO shifts VALUES ('active','2026-09-01',1000,NULL,1000,0,123.0,NULL,NULL,NULL,0,0,'running',NULL,NULL,NULL)")
+            old.version = 5
+        }
+        val db = Room.databaseBuilder(context, LedgerDatabase::class.java, name).addMigrations(LedgerDatabase.MIGRATION_5_6).build()
+        try {
+            val repo = LedgerRepository(db)
+            assertEquals("My van", repo.snapshot().vehicle.name)
+            assertEquals(22.0, repo.snapshot().vehicle.tankGallons, 0.0)
+            assertNull(repo.snapshot().vehicle.pendingFuelGapDate)
+            assertEquals("active", repo.snapshot().activeShift!!.id)
+            assertEquals(1000L, repo.snapshot().activeShift!!.runningSince)
+            repo.saveFuel(fuel)
+            assertEquals(8000L, repo.snapshot().expenses.single().amountCents)
+        } finally { db.close(); context.deleteDatabase(name) }
     }
     @Test fun `version four upgrade keeps earnings expenses corrections templates and goals`() = runTest {
         val context=ApplicationProvider.getApplicationContext<Context>()
@@ -110,7 +180,7 @@ class VehiclePersistenceTest {
             old.execSQL("INSERT INTO shifts VALUES ('s','2026-09-01',1000,5000,NULL,4000,123.0,NULL,NULL,NULL,0,1,'existing shift',2000,5000,2500)")
             old.version=4
         }
-        val db=Room.databaseBuilder(context,LedgerDatabase::class.java,name).addMigrations(LedgerDatabase.MIGRATION_4_5).build()
+        val db=Room.databaseBuilder(context,LedgerDatabase::class.java,name).addMigrations(LedgerDatabase.MIGRATION_4_5, LedgerDatabase.MIGRATION_5_6).build()
         try {
             val repo=LedgerRepository(db); val state=repo.snapshot()
             assertEquals(10000L,state.entries.single().amountCents)

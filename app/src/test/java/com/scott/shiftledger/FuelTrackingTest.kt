@@ -57,6 +57,14 @@ class FuelTrackingTest {
         assertNull(FuelTracking.latestGauge(LedgerState()))
         assertEquals(9,FuelTracking.latestGauge(LedgerState(fuelStops=listOf(a)),LocalDate.parse(a.date))!!.bars)
     }
+    @Test fun `backfilled same day fills do not replace a higher odometer gauge reading`() {
+        val morning = stop("morning", "2026-09-01", 1000.0, 20.0, true).copy(createdAt = 3000)
+        val later = FuelReading("later", morning.date, 3, 1200.0, 2000)
+        val state = LedgerState(fuelStops = listOf(morning), fuelReadings = listOf(later))
+        assertEquals(3, FuelTracking.latestGauge(state, LocalDate.parse(morning.date))!!.bars)
+        val noOdometer = FuelReading("current", morning.date, 2, null, 4000)
+        assertEquals(2, FuelTracking.latestGauge(state.copy(fuelReadings = listOf(later, noOdometer)), LocalDate.parse(morning.date))!!.bars)
+    }
     @Test fun `pump price keeps thousandths of a dollar`() {
         assertEquals("$4.349", fuelUnitPrice(4349, 10.0))
         assertEquals("$0.267", fuelUnitPrice(8000, 300.0))

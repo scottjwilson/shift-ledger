@@ -29,7 +29,9 @@ data class FuelReading(@PrimaryKey val id: String, val date: String, val bars: I
 
 @Serializable
 @Entity(tableName = "vehicle_settings")
-data class VehicleSettings(@PrimaryKey val id: String = "primary", val name: String = "2023 Ram ProMaster", val tankGallons: Double = 24.0)
+data class VehicleSettings(@PrimaryKey val id: String = "primary", val name: String = "2023 Ram ProMaster", val tankGallons: Double = 24.0,
+    val pendingFuelGapDate: String? = null, val pendingFuelGapOdometer: Double? = null,
+)
 
 @Serializable
 @Entity(tableName = "maintenance")
@@ -72,6 +74,9 @@ object FuelTracking {
     }
     fun validate(settings: VehicleSettings) {
         require(settings.id == "primary" && settings.name.isNotBlank() && settings.name.length <= 100)
+        require((settings.pendingFuelGapDate == null) == (settings.pendingFuelGapOdometer == null))
+        settings.pendingFuelGapDate?.let { require(validDate(it)) }
+        settings.pendingFuelGapOdometer?.let { require(it.isFinite() && it in 0.0..10_000_000.0) }
         require(settings.tankGallons.isFinite() && settings.tankGallons in 1.0..200.0) { "Enter tank capacity from 1 to 200 US gallons." }
     }
     fun validate(record: MaintenanceRecord) {
@@ -82,6 +87,11 @@ object FuelTracking {
         require(record.nextDate == null || validDate(record.nextDate) && record.nextDate > record.date) { "Next service date must be after this service." }
         require(record.shop.length <= 120 && record.note.length <= 2000)
     }
+    fun followsPendingGap(stop: FuelStop, vehicle: VehicleSettings): Boolean {
+        val date = vehicle.pendingFuelGapDate ?: return false
+        return stop.date > date || (stop.date == date && stop.odometer >= vehicle.pendingFuelGapOdometer!!)
+    }
+    fun clearPendingGap(vehicle: VehicleSettings) = vehicle.copy(pendingFuelGapDate = null, pendingFuelGapOdometer = null)
     fun ordered(stops: List<FuelStop>) = stops.sortedWith(compareBy<FuelStop> { it.date }.thenBy { it.odometer }.thenBy { it.createdAt }.thenBy { it.id })
     fun validateSequence(stops: List<FuelStop>) {
         require(ordered(stops).zipWithNext().all { (a,b) -> b.odometer >= a.odometer }) { "Odometer readings must increase with fill-up dates. Check your date or mileage." }
@@ -108,8 +118,14 @@ object FuelTracking {
             bars?.let { GaugeObservation(stop.date, it, stop.odometer, stop.createdAt) }
         }
         val readings = state.fuelReadings.map { GaugeObservation(it.date, it.bars, it.odometer, it.createdAt) }
-        return (stops + readings).filter { LocalDate.parse(it.date) <= through }
-            .maxWithOrNull(compareBy<GaugeObservation> { it.date }.thenBy { it.createdAt })
+        val observations = (stops + readings).filter { LocalDate.parse(it.date) <= through }
+        val latestDate = observations.maxOfOrNull { it.date } ?: return null
+        val sameDay = observations.filter { it.date == latestDate }
+        val latestEntered = sameDay.maxBy { it.createdAt }
+        // A check-in without mileage uses entry time. Otherwise mileage orders backfilled observations.
+        if (latestEntered.odometer == null) return latestEntered
+        return sameDay.filter { it.odometer != null }
+            .maxWithOrNull(compareBy<GaugeObservation> { it.odometer }.thenBy { it.createdAt })
     }
     fun expense(stop: FuelStop) = Expense(stop.expenseId, stop.date, stop.amountCents, "Fuel", "${decimal(stop.gallons)} gal · ${stop.station.ifBlank { "Fill-up" }} · ${decimal(stop.odometer)} mi")
     fun expense(record: MaintenanceRecord) = Expense(record.expenseId, record.date, record.amountCents, "Maintenance", "${record.service} · ${decimal(record.odometer)} mi · ${record.shop}")

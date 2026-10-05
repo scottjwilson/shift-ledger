@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:padding="14dp" android:background="@drawable/widget_background">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="SHIFT LEDGER" android:textColor="#B2D5BF" android:textSize="12sp" android:textStyle="bold" />
+        <TextView android:id="@+id/widget_refresh" android:layout_width="48dp" android:layout_height="48dp" android:text="↻" android:gravity="center" android:textColor="#E3F4E8" android:textSize="26sp" android:contentDescription="Refresh shift widget" />
+    </LinearLayout>
+    <TextView android:id="@+id/widget_earnings" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="$0.00 earned today" android:textSize="19sp" android:textStyle="bold" android:textColor="#E3F4E8" android:maxLines="1" android:ellipsize="end" />
+    <TextView android:id="@+id/widget_miles" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Open Shift Ledger to load records" android:textSize="14sp" android:textColor="#B2D5BF" android:layout_marginTop="4dp" />
+    <TextView android:id="@+id/widget_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Ready to start" android:textSize="14sp" android:textColor="#8AD6B1" android:layout_marginTop="4dp" />
+    <TextView android:id="@+id/widget_updated" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tap ↻ to refresh" android:textSize="11sp" android:textColor="#B2D5BF" android:layout_marginTop="2dp" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp">
+        <Button android:id="@+id/widget_primary" android:layout_width="0dp" android:layout_weight="1" android:layout_height="48dp" android:text="Start" android:textAllCaps="false" android:textColor="#073B28" android:backgroundTint="#8AD6B1" />
+        <Button android:id="@+id/widget_secondary" android:layout_width="0dp" android:layout_weight="1" android:layout_height="48dp" android:text="Import" android:textAllCaps="false" android:textColor="#E3F4E8" android:backgroundTint="#2B4939" android:layout_marginStart="8dp" />
+    </LinearLayout>
+</LinearLayout>

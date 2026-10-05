@@ -1,0 +1,111 @@
+Earnings History
+This is an independent contractor performing delivery services for Dispatchit, Inc. Please use the date
+filter below to access a list of payments, orders, mileage and engaged time as of Oct 4, 2026, 3:18PM.
+Total Earnings
+mm/dd/yyyy to mm/dd/yyyy Filter
+Today
+$0.00
+Your Balance
+$0.00
+Engaged Time
+203hrs 13mins
+Engaged Miles
+12049
+Detailed Earnings
+Amount Date
+Engaged Time
+(
+Estimated)
+Distance Traveled
+(
+Estimated) Details
+$99.50 Oct 2, 2026, 2:41PM 1hr 6mins 35.01mi Order 2813447
+$98.95 Payout · Oct 2 · Paid 1hr 6mins 35mi
+10/4/26, 3:18 PM My Earnings - Dispatch
+https://app.dispatchit.com/my_
+earnings 1/4
+10/4/26, 3:18 PM Amount Date
+$217.00 Payout · Oct 2 · Paid Engaged Time
+(
+Estimated)
+1hr 21mins My Earnings - Dispatch
+Distance Traveled
+(
+Estimated) Details
+81mi
+$215.85 Oct 2, 2026, 6:21AM 1hr 21mins 81.92mi Order 2811548
+$80.00 Payout · Oct 1 · Paid 49mins 24mi
+$81.14 Oct 1, 2026, 1:49PM 49mins 24.16mi Order 2810774
+$180.00 Payout · Oct 1 · Paid 1hr 22mins 60mi
+$92.35 Sep 30, 2026, 1:19PM 52mins 35.55mi Order 2808180
+$8.00 Sep 30, 2026, 12:31PM Order 2806287 ·
+$84.01 Sep 30, 2026, 6:27AM 30mins 25.14mi Order 2806287
+Adjustment
+$221.00 Payout · Sep 29 · Paid 1hr 31mins 86mi
+$224.07 Sep 28, 2026, 11:34AM 1hr 31mins 86.26mi Order 2801625
+$0.54 Payout · Sep 27 · Paid 0min 0mi
+$255.00 Payout · Sep 26 · Paid 1hr 38mins 99mi
+$257.47 Sep 26, 2026, 9:33AM 1hr 38mins 99.35mi Order 2799307
+$108.00 Payout · Sep 25 · Paid 34mins 28mi
+$109.44 Sep 25, 2026, 5:52AM 34mins 28.78mi Order 2796341
+$170.00 Payout · Sep 24 · Paid 32mins 22mi
+https://app.dispatchit.com/my_
+earnings 2/4
+10/4/26, 3:18 PM Amount Date
+Engaged Time
+(
+Estimated)
+My Earnings - Dispatch
+Distance Traveled
+(
+Estimated) Details
+$81.25 Sep 24, 2026, 10:03AM 16mins 10.81mi Order 2794667
+$62.00 Sep 24, 2026, 5:40AM 16mins 11.31mi Order 2793231
+$28.00 Sep 23, 2026, 4:36PM Order 2790650 ·
+Adjustment
+$260.00 Payout · Sep 23 · Paid 1hr 40mins 74mi
+$53.23 Sep 23, 2026, 4:01PM 21mins 14.65mi Order 2793337
+$85.00 Sep 23, 2026, 7:33AM 26mins 11.16mi Order 2790678
+$124.70 Sep 23, 2026, 5:47AM 53mins 48.89mi Order 2790650
+$263.00 Payout · Sep 22 · Paid 1hr 36mins 96mi
+$265.57 Sep 22, 2026, 6:31AM 1hr 36mins 96.28mi Order 2788013
+$252.00 Payout · Sep 21 · Paid 2hrs 20mins 115mi
+$235.50 Sep 21, 2026, 3:11PM 2hrs 20mins 115.04mi Order 2787299
+$50.00 Payout · Sep 21 · Paid 0min 0mi
+$300.00 Payout · Sep 21 · Paid 2hrs 2mins 123mi
+$318.96 Sep 21, 2026, 9:57AM 1hr 49mins 114.14mi Order 2786401
+$54.00 Sep 21, 2026, 5:08AM 13mins 9.19mi Order 2783250
+$0.15 Payout · Sep 20 · Paid 0min 0mi
+$71.00 Payout · Sep 18 · Paid 22mins 20mi
+https://app.dispatchit.com/my_
+earnings 3/4
+10/4/26, 3:18 PM Amount Date
+Engaged Time
+(
+Estimated)
+My Earnings - Dispatch
+Distance Traveled
+(
+Estimated) Details
+$71.77 Sep 18, 2026, 5:25AM 22mins 20.31mi Order 2780582
+$1,449.00 Payout · Sep 17 · Paid 9hrs 20mins 511mi
+$289.17 Sep 17, 2026, 6:47AM 1hr 49mins 108.32mi Order 2777706
+$173.96 Sep 16, 2026, 2:29PM 1hr 43mins 78.83mi Order 2776995
+$15.00 Sep 16, 2026, 1:01PM Order 2774764 ·
+$245.74 Sep 16, 2026, 11:12AM 1hr 53mins 118.53mi Order 2776586
+$65.00 Sep 16, 2026, 6:25AM 13mins 6.52mi Order 2774764
+$70.00 Sep 16, 2026, 5:08AM 10mins 6.63mi Order 2775250
+$36.00 Sep 15, 2026, 11:27AM Order 2771899 ·
+$299.27 Sep 15, 2026, 8:45AM 1hr 53mins 95.41mi Order 2773068
+$268.88 Sep 15, 2026, 6:54AM 1hr 39mins 97.6mi Order 2771899
+Adjustment
+Adjustment
+$233.00 Payout · Sep 14 · Paid 1hr 29mins 53mi
+$69.92 Sep 14, 2026, 2:22PM 36mins 17.6mi Order 2771232
+$69.06 Sep 14, 2026, 1:25PM 35mins 21.8mi Order 2771200
+$16.00 Sep 14, 2026, 12:57PM Order 2766830 ·
+Adjustment
+Note: You have additional earnings that were paid before Dispatch used Stripe that are not included in
+this list.
+https://app.dispatchit.com/my_
+earnings 4/4

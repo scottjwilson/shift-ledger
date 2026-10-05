@@ -1,0 +1,5 @@
+<resources>
+    <color name="ledger_window_background">#F5F6F0</color>
+    <color name="ledger_accent">#176B51</color>
+    <bool name="light_system_bars">true</bool>
+</resources>

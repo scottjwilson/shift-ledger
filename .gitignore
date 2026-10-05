@@ -1,0 +1,10 @@
+.gradle/
+.kotlin/
+.idea/
+**/build/
+local.properties
+*.jks
+*.keystore
+artifacts/
+**/hs_err_pid*.log
+**/replay_pid*.log

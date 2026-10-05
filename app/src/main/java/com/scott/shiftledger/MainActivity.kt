@@ -23,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -180,13 +179,7 @@ private fun LedgerApp(context: Context, vm: LedgerViewModel, themeMode: ThemeMod
             }, colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background))
         },
         bottomBar = {
-            val labels = listOf("Home", "Earnings", "Shifts", "Costs", "Data")
-            val icons = listOf(Icons.Default.Home, Icons.AutoMirrored.Filled.List, Icons.Default.DateRange, Icons.Default.ShoppingCart, Icons.Default.Settings)
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
-                labels.forEachIndexed { i, label ->
-                    NavigationBarItem(selected = tab == i, onClick = { tab = i; tool = null }, icon = { Icon(icons[i], label) }, label = { Text(label) })
-                }
-            }
+            LedgerNavigation(tab, onSelect = { tab = it; tool = null })
         }
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {

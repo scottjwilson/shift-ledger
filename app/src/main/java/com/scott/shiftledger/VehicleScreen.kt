@@ -251,7 +251,7 @@ import java.util.UUID
         FuelTracking.validate(row); require(LocalDate.parse(date) <= LocalDate.now()) { "Choose today or an earlier date." }; row
     }
     VehicleDialog(if (existing == null) "Record fill-up" else "Edit fill-up", busy, dismiss, candidate.isSuccess,
-        if (odo.isNotBlank() && gallons.isNotBlank() && amount.isNotBlank()) candidate.exceptionOrNull()?.localizedMessage ?: "Check all fields." else null,
+        if (candidate.isFailure && odo.isNotBlank() && gallons.isNotBlank() && amount.isNotBlank()) candidate.exceptionOrNull()?.localizedMessage ?: "Check all fields." else null,
         save = { candidate.getOrNull()?.let { save(it, dismiss) } }) {
         VehicleField("Date (YYYY-MM-DD)", date, { date = it.take(10) })
         VehicleField("Odometer (mi)", odo, { odo = it.take(14) }, true)

@@ -120,6 +120,8 @@ class LedgerViewModel(application: Application) : AndroidViewModel(application) 
             val count = repository.commitImport(it.parsed)
             message.value = "Saved $count new rows. Payouts remain separate from earnings."
             preview.value = null
+            importText.value = ""
+            importNotice.value = null
         }
     }
     fun start(odometer: Double?) = task {

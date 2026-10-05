@@ -27,6 +27,7 @@ class MessagesRatesScreenTest {
         repository.saveTemplate("starter-sunrun-score", SupportMessages.SUNRUN_TITLE, SupportMessages.SUNRUN_BODY)
     }
     @Test fun `messages copy and persist edits while monthly rates open order-specific messages`() {
+        compose.onNodeWithTag("home_list").performScrollToNode(hasText("Saved messages"))
         compose.onNodeWithText("Saved messages").performClick()
         try { compose.waitUntil(10_000) { compose.onAllNodesWithText(SupportMessages.SUNRUN_TITLE).fetchSemanticsNodes().isNotEmpty() } }
         catch (error: Exception) {
@@ -58,6 +59,7 @@ class MessagesRatesScreenTest {
                     DispatchParser.parse(javaClass.getResource("/dispatch-history.txt")!!.readText(), 2026))
             }
         }
+        compose.onNodeWithTag("home_list").performScrollToNode(hasText("Dollars per mile"))
         compose.onNodeWithText("Dollars per mile").performClick()
         try { compose.waitUntil(10_000) { compose.onAllNodesWithText("$2.93 / mi").fetchSemanticsNodes().isNotEmpty() } }
         catch (error: Exception) { screenshot("rates-debug"); println(compose.onRoot().printToString()); throw error }
